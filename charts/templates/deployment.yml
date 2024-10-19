@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replica | default 1 }}
+  selector:
+    matchLabels:
+      app: metabase
+  template:
+    metadata:
+      labels:
+        app: metabase    
+    spec:
+        containers:
+        - name: {{ .Release.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          ports:
+            - containerPort: 3009
+          env:
+           - name: MB_DB_USER
+             valueFrom:
+               secretKeyRef:
+                name: metabase-secrets
+                key: dba_user
+           - name: MB_DB_PASS
+             valueFrom:
+               secretKeyRef:
+                name: metabase-secrets
+                key: dba_pass
+          envFrom:
+            - configMapRef:
+                name: metabase-configmap
+          volumeMounts:
+            - name: metabase-data
+              mountPath: /metabase-data
+          resources: {{ toYaml .Values.resources | nindent 12 }}
+          startupProbe:
+            httpGet:
+               path: /api/health
+               port: 3000
+            initialDelaySeconds: 30
+            failureThreshold: 12
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            failureThreshold: 6
+            successThreshold: 1
+            periodSeconds: 10
+          imagePullPolicy: Always          
+        volumes:
+        - name: metabase-data
+          emptyDir: {}

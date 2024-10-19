@@ -1,0 +1,28 @@
+---
+image:
+  repository: metabase/metabase
+  tag: latest
+
+replica: 1
+
+domain_name: ""  
+
+dba:
+  host: "''" 
+  port: "''"
+  database: "''"
+  user: ""
+  pass: ""
+
+tls:
+  crt:
+  key:
+
+resources:
+   requests:
+     cpu: 1
+     memory: 2Gi
+   limits:
+     cpu: 1
+     memory: 2Gi
+...
